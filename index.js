@@ -70,12 +70,12 @@ Proxy.prototype = {
     },
 
     start: function(port, cb) {
-        var postData = '';
+        var postData = 'trustAllServers=true';
         if (!cb) {
             cb = port;
         }
         if (typeof(port) === 'number') {
-            postData = 'port=' + port;
+            postData = postData + '&port=' + port;
         }
 
         this.doReq('POST', '/proxy', postData, function(err, data) {
