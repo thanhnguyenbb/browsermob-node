@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2013 ZZO Associates
  */
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-var http = require('http')
-    , webdriverio = require("webdriverio")
+var http;
+var webdriverio = require("webdriverio");
 ;
 
 function Proxy(conf) {
@@ -16,6 +17,16 @@ function Proxy(conf) {
     this.downstreamKbps = conf && conf.downstreamKbps;
     this.upstreamKbps = conf && conf.upstreamKbps;
     this.latency = conf && conf.latency;
+
+    this.username = (conf && conf.username) || null;
+    this.password = (conf && conf.password) || null;
+    this.useHTTPS = (conf && conf.useHTTPS) || false;
+
+    if(this.useHTTPS){
+        http = require('https');
+    } else {
+        http = require('http');
+    }
 
     /*
      *  downstreamKbps - Sets the downstream kbps
@@ -214,11 +225,16 @@ Proxy.prototype = {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         };
+
+        if(this.username && this.password){
+            options.headers.Authorization =  'Basic ' + new Buffer(this.username + ':' + this.password).toString('base64');
+        }
+
         this.doReqWithOptions(options, postData, cb);
 
     },
-    doReqWithOptions: function (options, postData, cb) {
 
+    doReqWithOptions: function (options, postData, cb) {
         if (!cb) { // for empty requests
             cb = postData;
         }
